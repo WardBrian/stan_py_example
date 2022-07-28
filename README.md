@@ -1,6 +1,6 @@
 # Stan in Python Example
 
-An example of [cookiecutter-cmdstan-wrapper](https://github.com/WardBrian/cookiecutter-cmdstan-wrapper)
+An example of [cookiecutter-cmdstanpy-wrapper](https://github.com/WardBrian/cookiecutter-cmdstanpy-wrapper)
 
 
 ```python

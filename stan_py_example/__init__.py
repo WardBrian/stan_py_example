@@ -14,26 +14,32 @@ local_cmdstan = STAN_FILES_FOLDER / f"cmdstan-{CMDSTAN_VERSION}"
 if local_cmdstan.exists():
     cmdstanpy.set_cmdstan_path(str(local_cmdstan.resolve()))
 
-# Try to load the pre-compiled models. If that fails, compile them
-try:
+def load_stan_model(name: str) -> cmdstanpy.CmdStanModel:
+    """
+    Try to load precompiled Stan models. If that fails,
+    compile them.
+    """
+    try:
+        model = cmdstanpy.CmdStanModel(
+            exe_file=STAN_FILES_FOLDER / f"{name}.exe",
+            stan_file=STAN_FILES_FOLDER / f"{name}.stan",
+            compile=False,
+        )
+    except ValueError:
+        warnings.warn(f"Failed to load pre-built model '{name}.exe', compiling")
+        model = cmdstanpy.CmdStanModel(
+            stan_file=STAN_FILES_FOLDER / f"{name}.stan",
+            stanc_options={"O1": True},
+        )
+        shutil.copy(
+            model.exe_file,  # type: ignore
+            STAN_FILES_FOLDER / f"{name}.exe",
+        )
 
-    BERNOULLI = cmdstanpy.CmdStanModel(
-        exe_file=STAN_FILES_FOLDER / "bernoulli.exe",
-        stan_file=STAN_FILES_FOLDER / "bernoulli.stan",
-        compile=False,
-    )
+    return model
 
-except ValueError:
-    warnings.warn("Failed to load pre-built models, compiling")
 
-    BERNOULLI = cmdstanpy.CmdStanModel(
-        stan_file=STAN_FILES_FOLDER / "bernoulli.stan",
-        stanc_options={"O1": True},
-    )
-    shutil.copy(
-        BERNOULLI.exe_file,  # type: ignore
-        STAN_FILES_FOLDER / "bernoulli.exe",
-    )
+BERNOULLI = load_stan_model("bernoulli")
 
 
 def run_my_model():
